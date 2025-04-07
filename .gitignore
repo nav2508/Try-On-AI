@@ -10,7 +10,7 @@ __pycache__/
 
 # Datasets and raw data
 datas/
-datasets/
+
 
 # ML model files (if any are saved here)
 
