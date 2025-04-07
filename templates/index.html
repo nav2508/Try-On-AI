@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TryOn AI</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; align-items: center; align-content: center; align-self: center; }
+        select, button { margin: 10px 0; padding: 5px; }
+        img { max-width: 300px; margin: 10px; border: 1px solid #ddd; }
+        .row { display: flex; gap: 20px; }
+    </style>
+</head>
+<body>
+    <h1>TryOn AI</h1>
+    
+    <div class="row">
+        <div>
+            <label for="category">Pose Category:</label>
+            <select id="category">
+                {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="pid_index">Pose Index:</label>
+            <select id="pid_index">
+                {% for i in range(index_val) %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="gid">Garment Category:</label>
+            <select id="gid">
+                {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="g_index">Garment Index:</label>
+            <select id="g_index">
+                {% for i in range(index_val) %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+            <label for="g_type">Garment Type:</label>
+            <select id="g_type">
+                {% for i in ["top", "bottom"] %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <button id="visualizeBtn">Generate Visualization</button>
+    <button id="generateImageBtn">Generate Image</button>
+
+    <div id="results">
+        
+        <div class="row">
+            <div id="poseContainer"></div>
+            <div id="garmentContainer"></div>
+        </div>
+        <div id="outputContainer"></div>
+    </div>
+
+    <script>
+        let generatedImageData = ''; // Variable to store generated image data
+
+        document.getElementById('visualizeBtn').addEventListener('click', async () => {
+            const payload = {
+                category: document.getElementById('category').value,
+                gid: document.getElementById('gid').value,
+                pid_index: parseInt(document.getElementById('pid_index').value),
+                g_index: parseInt(document.getElementById('g_index').value),
+                g_type: document.getElementById('g_type').value
+
+            };
+
+            try {
+                const response = await fetch('/get_pimg', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const result = await response.json();
+
+                // Update DOM with images
+                document.getElementById('poseContainer').innerHTML = 
+                    `<h3>Pose Reference</h3><img src="data:image/png;base64,${result.img_pose}">`;
+                
+                document.getElementById('garmentContainer').innerHTML = 
+                    `<h3>Selected Garment</h3><img src="data:image/png;base64,${result.garmet}">`;
+                
+                // Store the generated image data for later use
+                generatedImageData = result.generated_image;
+
+
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+                console.error('Fetch error:', error);
+            }
+        });
+
+        document.getElementById('generateImageBtn').addEventListener('click', () => {
+            if (generatedImageData) {
+                // Display only the generated image below the pose and garment images
+                document.getElementById('outputContainer').innerHTML = 
+                    `<h2>Output:</h2><h3>Generated Output</h3><img src="data:image/png;base64,${generatedImageData}">`;
+            } else {
+                alert('Please generate the visualization first to see the generated image.');
+            }
+        });
+    </script>
+</body>
+</html>

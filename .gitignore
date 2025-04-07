@@ -1,0 +1,16 @@
+# macOS system file
+.DS_Store
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Checkpoints and model weights
+
+
+# Datasets and raw data
+datas/
+datasets/
+
+# ML model files (if any are saved here)
+
